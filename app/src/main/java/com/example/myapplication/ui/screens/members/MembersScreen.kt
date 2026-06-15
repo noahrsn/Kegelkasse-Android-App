@@ -29,11 +29,23 @@ import com.example.myapplication.viewmodels.KegelViewModel
 import java.text.NumberFormat
 import java.util.Locale
 
+/**
+ * Mitglieder-Übersichtsbildschirm.
+ * Zeigt alle Vereinsmitglieder mit ihren aktuellen Schulden in einer Liste an.
+ * Die Schulden sind farbcodiert:
+ * - Grün: Keine Schulden
+ * - Orange: Kleine Schulden (bis 5 €)
+ * - Rot: Große Schulden (über 5 €)
+ *
+ * @param viewModel KegelViewModel mit Mitgliederdaten
+ */
 @Composable
 fun MembersScreen(viewModel: KegelViewModel) {
+    // Lädt die aktuelle Mitgliederliste als State
     val members by viewModel.members.collectAsState()
 
     Column(modifier = Modifier.fillMaxSize()) {
+        // Header mit Titel
         Surface(tonalElevation = 2.dp) {
             Row(
                 modifier = Modifier
@@ -48,6 +60,7 @@ fun MembersScreen(viewModel: KegelViewModel) {
             }
         }
 
+        // Scrollbare Liste aller Mitglieder
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -62,6 +75,15 @@ fun MembersScreen(viewModel: KegelViewModel) {
     }
 }
 
+/**
+ * Einzelne Mitglieds-Karte für die Mitglieder-Liste.
+ * Zeigt:
+ * - Profilbuchstabe in farbigem Kreis
+ * - Name des Mitglieds
+ * - Aktuelle Schulden mit Farb-Codierung
+ *
+ * @param member Das darzustellende Mitglied
+ */
 @Composable
 private fun MemberCard(member: Member) {
     Card(modifier = Modifier.fillMaxWidth()) {
@@ -72,6 +94,7 @@ private fun MemberCard(member: Member) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            // Profilkreis mit Anfangsbuchstabe
             Surface(
                 shape = CircleShape,
                 color = MaterialTheme.colorScheme.primaryContainer,
@@ -90,18 +113,22 @@ private fun MemberCard(member: Member) {
                 }
             }
 
+            // Mitglieds-Name
             Text(
                 text = member.name,
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.weight(1f)
             )
 
+            // Schulden mit Farbcodierung
+            // Rot: > 5€, Orange: > 0€, Grün: keine Schulden
             val debtColor = when {
-                member.debt > 5.0 -> Color(0xFFB71C1C)
-                member.debt > 0.0 -> Color(0xFFE65100)
-                else -> Color(0xFF2E7D32)
+                member.debt > 5.0 -> Color(0xFFB71C1C)      // Dunkelrot für große Schulden
+                member.debt > 0.0 -> Color(0xFFE65100)      // Orange für kleine Schulden
+                else -> Color(0xFF2E7D32)                   // Grün für keine Schulden
             }
 
+            // Schulden-Anzeige mit farbigem Hintergrund
             Surface(
                 shape = MaterialTheme.shapes.small,
                 color = debtColor.copy(alpha = 0.12f)
@@ -118,5 +145,6 @@ private fun MemberCard(member: Member) {
     }
 }
 
+// Hilfsfunktion: Konvertiert einen Double-Wert in deutsches Währungsformat (z.B. "5,50 €")
 private fun formatCurrency(amount: Double): String =
     NumberFormat.getCurrencyInstance(Locale.GERMANY).format(amount)

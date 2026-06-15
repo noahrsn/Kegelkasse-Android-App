@@ -6,8 +6,13 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
-// Set of Material typography styles to start with
+/**
+ * Typographie-Einstellungen für Material Design 3.
+ * Definiert die Schriftstile für verschiedene UI-Komponenten.
+ * Hier wird nur bodyLarge überschrieben, andere Stile verwenden die Standardwerte.
+ */
 val Typography = Typography(
+    // Standardgröße für längere Texte im Body-Bereich (z.B. Beschreibungen)
     bodyLarge = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.Normal,
@@ -15,7 +20,11 @@ val Typography = Typography(
         lineHeight = 24.sp,
         letterSpacing = 0.5.sp
     )
-    /* Other default text styles to override
+    /* Weitere Text-Stile sind verfügbar und könnten hier überschrieben werden:
+    - titleLarge: Große Titel
+    - labelSmall: Kleine Beschriftungen
+    - und weitere mehr...
+    
     titleLarge = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.Normal,

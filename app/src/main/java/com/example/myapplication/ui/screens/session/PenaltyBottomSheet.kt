@@ -26,6 +26,16 @@ import com.example.myapplication.data.models.PenaltyItem
 import java.text.NumberFormat
 import java.util.Locale
 
+/**
+ * BottomSheet für Strafenauswahl.
+ * Wird angezeigt, wenn der Benutzer ein Mitglied antippen, um es zu bestrafen.
+ * Zeigt verfügbare Strafen in einem 2-Spalten-Gitter an.
+ *
+ * @param member Das zu bestrafende Mitglied
+ * @param penalties Liste aller verfügbaren Strafen
+ * @param onPenaltySelected Callback bei Strafenauswahl
+ * @param onDismiss Callback beim Schließ des BottomSheets
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PenaltyBottomSheet(
@@ -42,11 +52,13 @@ fun PenaltyBottomSheet(
                 .padding(bottom = 32.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            // Titel mit Mitglieds-Name
             Text(
                 text = "Strafe für ${member.name}",
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
+            // Gitter mit Strafen-Karten (2 Spalten)
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -63,6 +75,16 @@ fun PenaltyBottomSheet(
     }
 }
 
+/**
+ * Einzelne Strafen-Karte für das BottomSheet-Gitter.
+ * Zeigt:
+ * - Emoji-Icon (z.B. 🎳 für Pudel)
+ * - Strafenname (z.B. "Pudel")
+ * - Betrag (z.B. "0,10 €")
+ *
+ * @param penalty Die darzustellende Strafe
+ * @param onClick Callback bei Auswahl
+ */
 @Composable
 private fun PenaltyCard(penalty: PenaltyItem, onClick: () -> Unit) {
     Card(
@@ -80,13 +102,16 @@ private fun PenaltyCard(penalty: PenaltyItem, onClick: () -> Unit) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(2.dp)
         ) {
+            // Emoji-Icon der Strafe
             Text(text = penalty.icon, style = MaterialTheme.typography.headlineMedium)
+            // Name der Strafe
             Text(
                 text = penalty.name,
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.Medium,
                 textAlign = TextAlign.Center
             )
+            // Strafenbetrag
             Text(
                 text = formatCurrency(penalty.amount),
                 style = MaterialTheme.typography.bodyMedium,
@@ -96,5 +121,6 @@ private fun PenaltyCard(penalty: PenaltyItem, onClick: () -> Unit) {
     }
 }
 
+// Hilfsfunktion: Konvertiert einen Double-Wert in deutsches Währungsformat (z.B. "0,10 €")
 private fun formatCurrency(amount: Double): String =
     NumberFormat.getCurrencyInstance(Locale.GERMANY).format(amount)

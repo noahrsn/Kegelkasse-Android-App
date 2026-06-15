@@ -35,16 +35,28 @@ import kotlinx.coroutines.launch
 import java.text.NumberFormat
 import java.util.Locale
 
+/**
+ * Kegelabend-Bildschirm: Zeigt alle Vereinsmitglieder in einer Liste.
+ * Beim Antippen eines Mitglieds öffnet sich ein BottomSheet mit verfügbaren Strafen.
+ * Nach Strafenauswahl wird eine Bestätigung als Snackbar angezeigt.
+ *
+ * @param viewModel KegelViewModel mit Mitglieder- und Strafendaten
+ * @param snackbarHostState State für die Anzeige von Bestätigungsmeldungen
+ */
 @Composable
 fun SessionScreen(
     viewModel: KegelViewModel,
     snackbarHostState: SnackbarHostState
 ) {
+    // Lädt die aktuelle Mitgliederliste als State
     val members by viewModel.members.collectAsState()
+    // Verwaltet das zuletzt ausgewählte Mitglied (für das BottomSheet)
     var selectedMember by remember { mutableStateOf<Member?>(null) }
+    // Coroutine-Scope für Snackbar-Anzeige
     val scope = rememberCoroutineScope()
 
     Column(modifier = Modifier.fillMaxSize()) {
+        // Header mit Titel
         Surface(tonalElevation = 2.dp) {
             Row(
                 modifier = Modifier
@@ -60,6 +72,7 @@ fun SessionScreen(
             }
         }
 
+        // Scrollbare Liste aller Mitglieder
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -68,18 +81,22 @@ fun SessionScreen(
             contentPadding = PaddingValues(vertical = 8.dp)
         ) {
             items(members, key = { it.id }) { member ->
+                // Zeige eine Karte für jedes Mitglied, die bei Tap aktiviert wird
                 MemberSessionCard(member = member, onClick = { selectedMember = member })
             }
         }
     }
 
+    // BottomSheet mit Strafen-Auswahl (wird angezeigt, wenn ein Mitglied selected ist)
     selectedMember?.let { member ->
         PenaltyBottomSheet(
             member = member,
             penalties = viewModel.penalties,
             onPenaltySelected = { penalty ->
+                // Füge Strafe hinzu und schließe BottomSheet
                 viewModel.addPenalty(member.id, penalty)
                 selectedMember = null
+                // Zeige Bestätigung als Snackbar
                 scope.launch {
                     snackbarHostState.showSnackbar(
                         "Strafe hinzugefügt: ${penalty.name} (${formatCurrency(penalty.amount)})"
@@ -91,6 +108,16 @@ fun SessionScreen(
     }
 }
 
+/**
+ * Einzelne Mitglieds-Karte für den Kegelabend.
+ * Zeigt:
+ * - Profilbuchstabe in farbigem Kreis
+ * - Name und Aktionstext
+ * - Aktuelle Schulden
+ *
+ * @param member Das darzustellende Mitglied
+ * @param onClick Callback beim Antippen der Karte
+ */
 @Composable
 private fun MemberSessionCard(member: Member, onClick: () -> Unit) {
     Card(
@@ -105,6 +132,7 @@ private fun MemberSessionCard(member: Member, onClick: () -> Unit) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            // Profilkreis mit Anfangsbuchstabe
             Surface(
                 shape = CircleShape,
                 color = MaterialTheme.colorScheme.primary,
@@ -122,6 +150,7 @@ private fun MemberSessionCard(member: Member, onClick: () -> Unit) {
                     )
                 }
             }
+            // Name und Aktionsbeschriftung
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = member.name,
@@ -134,6 +163,7 @@ private fun MemberSessionCard(member: Member, onClick: () -> Unit) {
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
+            // Schulden-Anzeige (rot wenn > 0)
             Text(
                 text = formatCurrency(member.debt),
                 style = MaterialTheme.typography.titleMedium,
@@ -145,5 +175,6 @@ private fun MemberSessionCard(member: Member, onClick: () -> Unit) {
     }
 }
 
+// Hilfsfunktion: Konvertiert einen Double-Wert in deutsches Währungsformat (z.B. "5,50 €")
 private fun formatCurrency(amount: Double): String =
     NumberFormat.getCurrencyInstance(Locale.GERMANY).format(amount)

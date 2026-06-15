@@ -36,14 +36,27 @@ import com.example.myapplication.viewmodels.KegelViewModel
 import java.text.NumberFormat
 import java.util.Locale
 
+/**
+ * Hauptbildschirm (Dashboard) der Kegelkasse-App.
+ * Zeigt einen Überblick mit:
+ * - Begrüßung des aktuellen Benutzers
+ * - KPI-Karten: Schulden, nächster Termin, Kassenstand
+ * - Button zum Starten eines neuen Kegelabends
+ *
+ * @param viewModel KegelViewModel mit Daten für Mitglieder und App-Status
+ * @param onStartSession Callback zum Navigieren zur Session
+ */
 @Composable
 fun DashboardScreen(
     viewModel: KegelViewModel,
     onStartSession: () -> Unit
 ) {
+    // Lädt die aktuelle Mitgliederliste als State
     val members by viewModel.members.collectAsState()
+    // Findet den aktuellen Benutzer und ermittelt dessen Schulden (Standard: 0.0)
     val userDebt = members.find { it.id == viewModel.currentUserId }?.debt ?: 0.0
 
+    // Vertikale Liste mit Scroll-Funktionalität
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -53,11 +66,13 @@ fun DashboardScreen(
     ) {
         Spacer(Modifier.height(8.dp))
 
+        // Personalisierte Begrüßung mit Welle-Emoji
         Text(
             text = "Hallo, ${viewModel.currentUserName} 👋",
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold
         )
+        // Untertitel der App
         Text(
             text = "Kegelkasse – Dein Vereinsbudget",
             style = MaterialTheme.typography.bodyMedium,
@@ -66,6 +81,7 @@ fun DashboardScreen(
 
         Spacer(Modifier.height(4.dp))
 
+        // KPI-Karte 1: Zeigt Schulden des Benutzers an (orange wenn > 0, grün sonst)
         KpiCard(
             title = "Meine Schulden",
             value = formatCurrency(userDebt),
@@ -75,6 +91,7 @@ fun DashboardScreen(
             contentColor = if (userDebt > 0) MaterialTheme.colorScheme.onErrorContainer
                            else MaterialTheme.colorScheme.onPrimaryContainer
         )
+        // KPI-Karte 2: Zeigt den nächsten Kegelabend an
         KpiCard(
             title = "Nächster Termin",
             value = viewModel.nextSession,
@@ -82,6 +99,7 @@ fun DashboardScreen(
             containerColor = MaterialTheme.colorScheme.secondaryContainer,
             contentColor = MaterialTheme.colorScheme.onSecondaryContainer
         )
+        // KPI-Karte 3: Zeigt den Kassenstand des Vereins an
         KpiCard(
             title = "Kassenstand",
             value = formatCurrency(viewModel.clubBalance),
@@ -92,6 +110,7 @@ fun DashboardScreen(
 
         Spacer(Modifier.height(8.dp))
 
+        // Button zum Starten eines neuen Kegelabends
         Button(
             onClick = onStartSession,
             modifier = Modifier
@@ -105,6 +124,16 @@ fun DashboardScreen(
     }
 }
 
+/**
+ * Wiederverwendbare KPI-Karte mit Icon, Titel und Wert.
+ * Zeigt Informationen in farbigen Karten an.
+ *
+ * @param title Titel der Karte (z.B. "Meine Schulden")
+ * @param value Angezeigter Wert (z.B. "5,50 €")
+ * @param icon Material-Icon zur visuellen Darstellung
+ * @param containerColor Hintergrundfarbe der Karte
+ * @param contentColor Textfarbe der Karte
+ */
 @Composable
 private fun KpiCard(
     title: String,
@@ -127,7 +156,9 @@ private fun KpiCard(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            // Icon auf der linken Seite
             Icon(imageVector = icon, contentDescription = null, modifier = Modifier.size(36.dp))
+            // Titel und Wert in einer Spalte
             Column {
                 Text(text = title, style = MaterialTheme.typography.labelLarge)
                 Text(
@@ -140,5 +171,6 @@ private fun KpiCard(
     }
 }
 
+// Konvertiert einen Double-Wert in ein deutsches Währungsformat (z.B. "5,50 €")
 private fun formatCurrency(amount: Double): String =
     NumberFormat.getCurrencyInstance(Locale.GERMANY).format(amount)

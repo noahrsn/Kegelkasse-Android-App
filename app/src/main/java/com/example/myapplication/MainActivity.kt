@@ -29,29 +29,45 @@ import com.example.myapplication.ui.screens.session.SessionScreen
 import com.example.myapplication.ui.theme.MyApplicationTheme
 import com.example.myapplication.viewmodels.KegelViewModel
 
+/**
+ * Hauptaktivität der Kegelkasse-App.
+ * Verwaltet:
+ * - Den Navigation-Stack zwischen Bildschirmen
+ * - Den globalen ViewModel mit App-Daten
+ * - Die Bottom Navigation Bar
+ * - Snackbar-Benachrichtigungen
+ */
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Aktiviere Edge-to-Edge-Modus (nutzt vollständig den Screen)
         enableEdgeToEdge()
         setContent {
             MyApplicationTheme {
+                // Navigation Controller für das Wechseln zwischen Screens
                 val navController = rememberNavController()
+                // Globaler ViewModel für alle Bildschirme
                 val viewModel: KegelViewModel = viewModel()
+                // State für Snackbar-Nachrichten
                 val snackbarHostState = remember { SnackbarHostState() }
+                // Aktuelle Navigations-Route (um aktives Tab zu markieren)
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = navBackStackEntry?.destination?.route
 
+                // Hauptlayout mit Bottom Navigation Bar und Snackbar
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                     snackbarHost = { SnackbarHost(snackbarHostState) },
                     bottomBar = {
                         NavigationBar {
+                            // Erstelle ein Navigation-Item für jeden definier Screen
                             bottomNavItems.forEach { screen ->
                                 NavigationBarItem(
                                     icon = { Icon(screen.icon, contentDescription = screen.label) },
                                     label = { Text(screen.label) },
                                     selected = currentRoute == screen.route,
                                     onClick = {
+                                        // Navigation mit Stack-Management (verhindert Duplikate)
                                         navController.navigate(screen.route) {
                                             popUpTo(navController.graph.startDestinationId) {
                                                 saveState = true
@@ -65,27 +81,32 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                 ) { innerPadding ->
+                    // Navigation Graph: Definiert die einzelnen Screens und deren Routes
                     NavHost(
                         navController = navController,
                         startDestination = Screen.Dashboard.route,
                         modifier = Modifier.padding(innerPadding)
                     ) {
+                        // Dashboard-Screen (Startbildschirm)
                         composable(Screen.Dashboard.route) {
                             DashboardScreen(
                                 viewModel = viewModel,
                                 onStartSession = {
+                                    // Navigation zur Session mit launchSingleTop (verhindert Duplikate)
                                     navController.navigate(Screen.Session.route) {
                                         launchSingleTop = true
                                     }
                                 }
                             )
                         }
+                        // Session-Screen (Kegelabend mit Bestrafungen)
                         composable(Screen.Session.route) {
                             SessionScreen(
                                 viewModel = viewModel,
                                 snackbarHostState = snackbarHostState
                             )
                         }
+                        // Members-Screen (Mitglieder-Übersicht)
                         composable(Screen.Members.route) {
                             MembersScreen(viewModel = viewModel)
                         }
